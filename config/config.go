@@ -10,7 +10,7 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	models "go-fiber-PoC/models"
+	models "go-fiber-PoC/backend/models"
 )
 
 var DB *gorm.DB
@@ -53,6 +53,7 @@ func InitDB() {
 	sqlDB.SetConnMaxLifetime(time.Minute * 30)
 
 	// Auto-migration of the database models
+	// TODO: I think I can find a way of automating this with the files found in the models folder
 	err = DB.AutoMigrate(
 		&models.User{},
 		&models.Expediente{},

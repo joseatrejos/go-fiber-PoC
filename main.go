@@ -1,7 +1,7 @@
 package main
 
 import (
-	routers "go-fiber-PoC/backend/routers"
+	routers "go-fiber-PoC/backend"
 	config "go-fiber-PoC/config"
 )
 

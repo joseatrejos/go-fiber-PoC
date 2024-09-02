@@ -2,8 +2,8 @@ package usuario
 
 import (
 	"fmt"
-	daos "go-fiber-PoC/backend/daos"
-	models "go-fiber-PoC/models"
+	daos "go-fiber-PoC/backend/data"
+	models "go-fiber-PoC/backend/models"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
