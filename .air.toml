@@ -1,0 +1,16 @@
+# Config file for Air (https://github.com/cosmtrek/air)
+# All settings are optional, and you can delete the options you don't want to change.
+# See all available options and their default values here: https://github.com/cosmtrek/air/blob/master/.air.example.toml
+
+[build]
+  bin = "./bin/app"                         # Path to the binary that Air will run
+  cmd = "go build -o ./bin/app"             # Command to build the binary
+  watch_dir = ["./"]                        # Directories to watch
+  exclude_dir = ["tmp", "vendor", "bin"]    # Directories to exclude from watching
+  full_bin = "/Users/joseatrejos/Downloads/API-Optimization/go-fiber/bin/app"  # Full path to the binary
+
+[log]
+  # If you don't want colorful logs, change this to false
+  color = true
+  # Set to false if you don't want time info in the log
+  time = true

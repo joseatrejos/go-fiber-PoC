@@ -1,0 +1,1 @@
+curl -X POST http://localhost:3000/expedientes -H "Content-Type: application/json" -d '{"name": "John Doe", "description": "john@example.com"}'
