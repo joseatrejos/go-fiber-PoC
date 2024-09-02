@@ -1,57 +1,122 @@
 package usuario_router
 
 import (
-	"go-fiber-PoC/config"
-	"go-fiber-PoC/models"
+	"fmt"
+	daos "go-fiber-PoC/data/daos"
+	models "go-fiber-PoC/models"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
+	"gorm.io/gorm"
 )
 
-func SetupRoutes(app *fiber.App) {
-	app.Get("/users", getUsers)
-	app.Post("/users", createUser)
-	app.Put("/users/:id", updateUser)
-	app.Delete("/users/:id", deleteUser)
+// SetupRoutes initializes the routes for the entity
+func SetupRoutes(app *fiber.App, db *gorm.DB) {
+	// Create DAOs using factory function
+	entityDAO := daos.NewBaseDAO(db, models.User{})
+
+	// Routes' handlers
+	app.Get("/users/:id", getByID(entityDAO))
+	app.Get("/users", getAll(entityDAO))
+	app.Post("/users", create(entityDAO))
+	app.Put("/users/:id", update(entityDAO))
+	app.Delete("/users/:id", delete(entityDAO))
 }
 
-func getUsers(c *fiber.Ctx) error {
-	var users []models.User
-	if err := config.DB.Find(&users).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
+func getByID(modelDao *daos.BaseDAO[models.User]) func(c *fiber.Ctx) error {
+	// We need to return an anonymous function that receives a fiber.Ctx and returns an error
+	return func(c *fiber.Ctx) error {
+		// Get the ID from the URL and validate it
+		idParam := c.Params("id")
+		id, err := strconv.Atoi(idParam)
+		if err != nil || id < 1 {
+			return c.Status(422).JSON(fiber.Map{"message": fmt.Sprintf("Invalid ID: %s", idParam)})
+		}
+
+		// Use the DAO to fetch the record by ID
+		getResult, err := modelDao.Get(uint(id))
+		if err != nil {
+			return c.Status(500).SendString("Error fetching users")
+		}
+		return c.JSON(getResult)
 	}
-	return c.JSON(users)
 }
 
-func createUser(c *fiber.Ctx) error {
-	var user models.User
-	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
+func getAll(modelDao *daos.BaseDAO[models.User]) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		getAllResult, err := modelDao.GetAll()
+		if err != nil {
+			return c.Status(500).SendString("Error fetching users")
+		}
+		return c.JSON(getAllResult)
 	}
-	if err := config.DB.Create(&user).Error; err != nil {
-		return c.Status(fiber.StatusInternalServerError).SendString(err.Error())
-	}
-	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
-func updateUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	var user models.User
-	if err := config.DB.First(&user, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).SendString(err.Error())
+func create(modelDao *daos.BaseDAO[models.User]) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		// Initialize an empty User struct
+		var entity models.User
+
+		// Parse the JSON body into the Entity's struct
+		if err := c.BodyParser(&entity); err != nil {
+			return c.Status(400).SendString("Invalid request data")
+		}
+
+		// Use the DAO to create the new record
+		createResult := modelDao.Create(&entity)
+		if createResult != nil {
+			return c.Status(500).JSON(fiber.Map{"message": fmt.Sprintf("Error creating user! %s", createResult.Error())})
+		}
+
+		return c.Status(201).JSON(entity)
 	}
-	if err := c.BodyParser(&user); err != nil {
-		return c.Status(fiber.StatusBadRequest).SendString(err.Error())
-	}
-	config.DB.Save(&user)
-	return c.Status(fiber.StatusOK).JSON(user)
 }
 
-func deleteUser(c *fiber.Ctx) error {
-	id := c.Params("id")
-	var user models.User
-	if err := config.DB.First(&user, id).Error; err != nil {
-		return c.Status(fiber.StatusNotFound).SendString(err.Error())
+func update(modelDao *daos.BaseDAO[models.User]) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		// Get the ID from the URL and validate it
+		idParam := c.Params("id")
+		id, err := strconv.Atoi(idParam)
+		if err != nil || id < 1 {
+			return c.Status(422).JSON(fiber.Map{"message": fmt.Sprintf("Invalid ID: %s", idParam)})
+		}
+
+		// Find the existing resource by ID
+		existingEntity, err := modelDao.Get(uint(id))
+		if err != nil {
+			return c.Status(404).JSON(fiber.Map{"message": "Resource not found"})
+		}
+
+		// Parse the JSON body into the entity struct
+		if err := c.BodyParser(&existingEntity); err != nil {
+			return c.Status(422).JSON(fiber.Map{"message": "Invalid request data"})
+		}
+
+		// Use the DAO to update the record
+		if err := modelDao.Update(&existingEntity); err != nil {
+			return c.Status(500).JSON(fiber.Map{"message": fmt.Sprintf("Error updating resource! %s", err.Error())})
+		}
+
+		return c.JSON(existingEntity)
 	}
-	config.DB.Delete(&user)
-	return c.Status(fiber.StatusNoContent).SendString("User deleted successfully")
+}
+
+func delete(modelDao *daos.BaseDAO[models.User]) func(c *fiber.Ctx) error {
+	return func(c *fiber.Ctx) error {
+		// Get the ID from the URL
+		idParam := c.Params("id")
+
+		// Validate the ID
+		id, err := strconv.Atoi(idParam)
+		if err != nil || id < 1 {
+			return c.Status(400).JSON(fiber.Map{"message": fmt.Sprintf("Invalid ID: %s", idParam)})
+		}
+
+		// Use the DAO to delete the record
+		deleteResult := modelDao.Delete(uint(id))
+		if deleteResult != nil {
+			return c.Status(500).JSON(fiber.Map{"message": fmt.Sprintf("Error deleting user! %s", deleteResult.Error())})
+		}
+		return c.JSON(fiber.Map{"message": "Resource deleted successfully"})
+	}
 }

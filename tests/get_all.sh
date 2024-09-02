@@ -1,1 +1,1 @@
-curl http://localhost:3000/expedientes
+curl http://localhost:3000/users

@@ -16,8 +16,8 @@ func main() {
 	// Initialize the database
 	config.InitDB()
 
-	// Routes startup
-	routers.Setup(app)
+	// Router setup
+	routers.Setup(app, config.DB)
 
 	// Start server
 	config.StartServer(app)
