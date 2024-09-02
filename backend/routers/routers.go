@@ -1,8 +1,8 @@
 package routers
 
 import (
-	expediente_router "go-fiber-PoC/routers/expediente"
-	usuario_router "go-fiber-PoC/routers/usuario"
+	expediente "go-fiber-PoC/apps/expediente"
+	usuario "go-fiber-PoC/apps/usuario"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -10,6 +10,6 @@ import (
 
 // Setup initializes all the routes for the application's entities/resources
 func Setup(app *fiber.App, db *gorm.DB) {
-	usuario_router.SetupRoutes(app, db)
-	expediente_router.SetupRoutes(app, db)
+	usuario.SetupRoutes(app, db)
+	expediente.SetupRoutes(app, db)
 }

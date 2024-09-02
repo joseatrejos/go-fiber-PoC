@@ -1,8 +1,8 @@
-package usuario_router
+package usuario
 
 import (
 	"fmt"
-	daos "go-fiber-PoC/data/daos"
+	daos "go-fiber-PoC/backend/daos"
 	models "go-fiber-PoC/models"
 	"strconv"
 

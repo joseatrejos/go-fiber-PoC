@@ -1,8 +1,8 @@
 package main
 
 import (
+	routers "go-fiber-PoC/backend/routers"
 	config "go-fiber-PoC/config"
-	routers "go-fiber-PoC/routers"
 )
 
 func main() {

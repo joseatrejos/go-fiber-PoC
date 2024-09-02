@@ -1,7 +1,7 @@
-package repositories
+package expediente
 
 import (
-	"models"
+	"go-fiber-PoC/models"
 
 	"gorm.io/gorm"
 )

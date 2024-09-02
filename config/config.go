@@ -52,10 +52,11 @@ func InitDB() {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(time.Minute * 30)
 
-	// We must add all of our models here for auto-migration to work
+	// Auto-migration of the database models
 	err = DB.AutoMigrate(
 		&models.User{},
 		&models.Expediente{},
+		// Add new models here
 	)
 	if err != nil {
 		log.Fatal("Failed to run migrations")
